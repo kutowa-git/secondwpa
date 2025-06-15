@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>アナログ時計（影表示調整済み）</title>
+  <title>アナログ時計（黒い枠なし）</title>
   <style>
     body {
       font-family: sans-serif;
@@ -15,7 +15,7 @@
       display: block;
       margin: 2rem auto;
       background: #fff;
-      border: 8px solid #333;
+      /* borderを外す */
       border-radius: 50%;
     }
   </style>
@@ -26,7 +26,7 @@
   <script>
     const canvas = document.getElementById("analogClock");
     const ctx = canvas.getContext("2d");
-    const radius = canvas.height / 2 - 10; // 余裕を持たせる
+    const radius = canvas.height / 2 - 10;
     ctx.translate(canvas.width / 2, canvas.height / 2);
 
     function drawClock() {
@@ -42,9 +42,14 @@
       ctx.shadowBlur = 15;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = "white";
+      ctx.fill();
+
       ctx.restore();
     }
-
 
     function drawTime(ctx, radius) {
       const now = new Date();
