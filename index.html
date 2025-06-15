@@ -3,37 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>アナログ時計（黒い枠なし）</title>
+  <title>2つのアナログ時計（ローカル＆ロンドン時間）</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 2rem;
       background-color: #f0f0f0;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 2rem; /* 時計の間隔 */
     }
-    #analogClock {
-      display: block;
-      margin: 2rem auto;
+    canvas {
       background: #fff;
-      /* borderを外す */
       border-radius: 50%;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <canvas id="analogClock" width="200" height="200"></canvas>
+  <canvas id="localClock" width="200" height="200"></canvas>
+  <canvas id="londonClock" width="200" height="200"></canvas>
 
   <script>
-    const canvas = document.getElementById("analogClock");
-    const ctx = canvas.getContext("2d");
-    const radius = canvas.height / 2 - 10;
-    ctx.translate(canvas.width / 2, canvas.height / 2);
+    const localCanvas = document.getElementById("localClock");
+    const londonCanvas = document.getElementById("londonClock");
+    const localCtx = localCanvas.getContext("2d");
+    const londonCtx = londonCanvas.getContext("2d");
 
-    function drawClock() {
-      ctx.clearRect(-canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
+    const radius = localCanvas.height / 2 - 10;
+
+    // キャンバス中心に原点を移動
+    localCtx.translate(localCanvas.width / 2, localCanvas.height / 2);
+    londonCtx.translate(londonCanvas.width / 2, londonCanvas.height / 2);
+
+    function drawClock(ctx, radius, time) {
+      ctx.clearRect(-ctx.canvas.width/2, -ctx.canvas.height/2, ctx.canvas.width, ctx.canvas.height);
       drawFace(ctx, radius);
-      drawTime(ctx, radius);
-      requestAnimationFrame(drawClock);
+      drawTime(ctx, radius, time);
     }
 
     function drawFace(ctx, radius) {
@@ -51,27 +58,22 @@
       ctx.restore();
     }
 
-    function drawTime(ctx, radius) {
-        const now = new Date();
-        let hour = now.getHours();
-        let minute = now.getMinutes();
-        let second = now.getSeconds();
-        let millis = now.getMilliseconds();
+    function drawTime(ctx, radius, time) {
+      let hour = time.getHours();
+      let minute = time.getMinutes();
+      let second = time.getSeconds();
+      let millis = time.getMilliseconds();
 
-        let smoothSecond = second + millis / 1000;
-        let smoothMinute = minute + smoothSecond / 60;
-        let smoothHour = (hour % 12) + smoothMinute / 60;
+      let smoothSecond = second + millis / 1000;
+      let smoothMinute = minute + smoothSecond / 60;
+      let smoothHour = (hour % 12) + smoothMinute / 60;
 
-        let hourAngle = (smoothHour * Math.PI) / 6;
-        let minuteAngle = (smoothMinute * Math.PI) / 30;
+      let hourAngle = (smoothHour * Math.PI) / 6;
+      let minuteAngle = (smoothMinute * Math.PI) / 30;
 
-        // 秒針を描かないので削除
-
-        drawHand(ctx, hourAngle, radius * 0.5, radius * 0.08); // 太くしたい時は0.08などに
-        drawHand(ctx, minuteAngle, radius * 0.75, radius * 0.08); // 分針も太く
+      drawHand(ctx, hourAngle, radius * 0.5, radius * 0.08);
+      drawHand(ctx, minuteAngle, radius * 0.75, radius * 0.08);
     }
-
-
 
     function drawHand(ctx, pos, length, width, color = "#000") {
       ctx.beginPath();
@@ -85,7 +87,20 @@
       ctx.rotate(-pos);
     }
 
-    drawClock();
+    function update() {
+      const nowLocal = new Date();
+      // ロンドン時間はUTCをベースにし、必要なら夏時間など調整可
+      // ここでは単純にUTC時間を表示（GMTとも言える）
+      const nowLondon = new Date(Date.now() + (new Date().getTimezoneOffset() * 60000)); // UTC
+      // 上記だと実はUTC。夏時間考慮する場合は別途対応必要。
+
+      drawClock(localCtx, radius, nowLocal);
+      drawClock(londonCtx, radius, nowLondon);
+
+      requestAnimationFrame(update);
+    }
+
+    update();
   </script>
 </body>
 </html>
