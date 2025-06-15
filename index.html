@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>2つのアナログ時計</title>
+  <title>4つのアナログ時計</title>
   <style>
     body {
       font-family: sans-serif;
@@ -12,10 +12,14 @@
       text-align: center;
     }
 
-    .clock-container {
-      display: flex;
-      justify-content: center;
+    .clock-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 2rem;
+      justify-items: center;
+      align-items: center;
+      max-width: 500px;
+      margin: 0 auto;
     }
 
     canvas {
@@ -26,9 +30,12 @@
   </style>
 </head>
 <body>
-  <div class="clock-container">
+  <h1>アナログ時計 × 4</h1>
+  <div class="clock-grid">
     <canvas id="clock1" width="200" height="200"></canvas>
     <canvas id="clock2" width="200" height="200"></canvas>
+    <canvas id="clock3" width="200" height="200"></canvas>
+    <canvas id="clock4" width="200" height="200"></canvas>
   </div>
 
   <script>
@@ -105,8 +112,11 @@
       }
     }
 
+    // 時計4つを生成
     new AnalogClock("clock1");
     new AnalogClock("clock2");
+    new AnalogClock("clock3");
+    new AnalogClock("clock4");
   </script>
 </body>
 </html>
