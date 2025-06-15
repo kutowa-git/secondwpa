@@ -18,7 +18,6 @@
       background: #fff;
       border: 8px solid #333;
       border-radius: 50%;
-      /* canvasは影はcanvas内の描画にしか効かないためここは不要 */
     }
   </style>
 </head>
@@ -34,15 +33,16 @@
     function drawClock() {
       ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
       drawFace(ctx, radius);
+      drawNumbers(ctx, radius);
       drawTime(ctx, radius);
       requestAnimationFrame(drawClock);
     }
 
     function drawFace(ctx, radius) {
-      ctx.save();
+      ctx.save();  // 状態保存
 
-      // 外側に影をつける設定
-      ctx.shadowColor = "rgba(0,0,0,0.5)";
+      // 影の設定（外側に影）
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
       ctx.shadowBlur = 15;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -52,7 +52,7 @@
       ctx.fillStyle = "white";
       ctx.fill();
 
-      ctx.restore();
+      ctx.restore(); // 状態復帰（影設定解除）
     }
 
     function drawNumbers(ctx, radius) {
