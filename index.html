@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title></title>
+  <title>滑らかアナログ時計</title>
   <style>
     body {
       font-family: sans-serif;
@@ -28,14 +28,14 @@
     const canvas = document.getElementById("analogClock");
     const ctx = canvas.getContext("2d");
     const radius = canvas.height / 2;
-    ctx.translate(radius, radius);
+    ctx.translate(radius, radius); // 原点を中心へ移動
 
     function drawClock() {
-      ctx.clearRect(-radius, -radius, canvas.width, canvas.height); // 画面クリア
+      ctx.clearRect(-radius, -radius, radius * 2, radius * 2); // 全体クリア
       drawFace(ctx, radius);
       drawNumbers(ctx, radius);
       drawTime(ctx, radius);
-      requestAnimationFrame(drawClock); // 次フレームを呼ぶ
+      requestAnimationFrame(drawClock); // 毎フレーム描画
     }
 
     function drawFace(ctx, radius) {
@@ -49,6 +49,7 @@
       ctx.font = radius * 0.15 + "px sans-serif";
       ctx.textBaseline = "middle";
       ctx.textAlign = "center";
+
       for (let num = 1; num <= 12; num++) {
         let ang = num * Math.PI / 6;
         ctx.rotate(ang);
@@ -68,7 +69,7 @@
       let second = now.getSeconds();
       let millis = now.getMilliseconds();
 
-      // 秒針を滑らかに
+      // ミリ秒単位で針の角度を滑らかに
       let smoothSecond = second + millis / 1000;
       let smoothMinute = minute + smoothSecond / 60;
       let smoothHour = (hour % 12) + smoothMinute / 60;
@@ -77,25 +78,24 @@
       let minuteAngle = (smoothMinute * Math.PI) / 30;
       let secondAngle = (smoothSecond * Math.PI) / 30;
 
-      drawHand(ctx, hourAngle, radius * 0.5, radius * 0.05);
+      drawHand(ctx, hourAngle,   radius * 0.5,  radius * 0.05);
       drawHand(ctx, minuteAngle, radius * 0.75, radius * 0.03);
       drawHand(ctx, secondAngle, radius * 0.85, radius * 0.01, "red");
     }
 
-    function drawHand(ctx, pos, length, width, color = "#000") {
+    function drawHand(ctx, angle, length, width, color = "#000") {
       ctx.beginPath();
       ctx.lineWidth = width;
       ctx.lineCap = "round";
       ctx.strokeStyle = color;
       ctx.moveTo(0, 0);
-      ctx.rotate(pos);
+      ctx.rotate(angle);
       ctx.lineTo(0, -length);
       ctx.stroke();
-      ctx.rotate(-pos);
+      ctx.rotate(-angle);
     }
 
-
-    drawClock(); // アニメーション開始
+    drawClock(); // 初回呼び出しでアニメーション開始
   </script>
 </body>
 </html>
