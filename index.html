@@ -52,24 +52,26 @@
     }
 
     function drawTime(ctx, radius) {
-      const now = new Date();
-      let hour = now.getHours();
-      let minute = now.getMinutes();
-      let second = now.getSeconds();
-      let millis = now.getMilliseconds();
+        const now = new Date();
+        let hour = now.getHours();
+        let minute = now.getMinutes();
+        let second = now.getSeconds();
+        let millis = now.getMilliseconds();
 
-      let smoothSecond = second + millis / 1000;
-      let smoothMinute = minute + smoothSecond / 60;
-      let smoothHour = (hour % 12) + smoothMinute / 60;
+        let smoothSecond = second + millis / 1000;
+        let smoothMinute = minute + smoothSecond / 60;
+        let smoothHour = (hour % 12) + smoothMinute / 60;
 
-      let hourAngle = (smoothHour * Math.PI) / 6;
-      let minuteAngle = (smoothMinute * Math.PI) / 30;
-      let secondAngle = (smoothSecond * Math.PI) / 30;
+        let hourAngle = (smoothHour * Math.PI) / 6;
+        let minuteAngle = (smoothMinute * Math.PI) / 30;
 
-      drawHand(ctx, hourAngle, radius * 0.5, radius * 0.05);
-      drawHand(ctx, minuteAngle, radius * 0.75, radius * 0.03);
-      drawHand(ctx, secondAngle, radius * 0.85, radius * 0.01, "red");
+        // 秒針を描かないので削除
+
+        drawHand(ctx, hourAngle, radius * 0.5, radius * 0.08); // 太くしたい時は0.08などに
+        drawHand(ctx, minuteAngle, radius * 0.75, radius * 0.08); // 分針も太く
     }
+
+
 
     function drawHand(ctx, pos, length, width, color = "#000") {
       ctx.beginPath();
