@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>2つのランダム時計</title>
+  <title>分切り替わりでランダムに変わる時計</title>
   <style>
     body {
       font-family: sans-serif;
@@ -22,22 +22,26 @@
   </style>
 </head>
 <body>
-  <canvas id="clock1" width="200" height="200"></canvas>
-  <canvas id="clock2" width="200" height="200"></canvas>
+  <canvas id="localClock" width="200" height="200"></canvas>
+  <canvas id="londonClock" width="200" height="200"></canvas>
 
   <script>
     const clocks = [
       {
-        canvas: document.getElementById("clock1"),
+        canvas: document.getElementById("localClock"),
         ctx: null,
-        hourAngle: 0,
-        minuteAngle: 0,
+        radius: 0,
+        randomAngles: {hour: 0, minute: 0},
+        lastMinute: null,
+        timeOffset: 0 // ローカル時間
       },
       {
-        canvas: document.getElementById("clock2"),
+        canvas: document.getElementById("londonClock"),
         ctx: null,
-        hourAngle: 0,
-        minuteAngle: 0,
+        radius: 0,
+        randomAngles: {hour: 0, minute: 0},
+        lastMinute: null,
+        timeOffset: -new Date().getTimezoneOffset() / 60 - 1 // ロンドン時間 (例: 日本-9h)
       }
     ];
 
@@ -47,23 +51,31 @@
       clock.radius = clock.canvas.height / 2 - 10;
     });
 
-    // 1分ごとにランダムな角度を設定する関数
-    function updateRandomAngles() {
-      clocks.forEach(clock => {
-        clock.hourAngle = Math.random() * 2 * Math.PI;
-        clock.minuteAngle = Math.random() * 2 * Math.PI;
-      });
-    }
+    function updateRandomAnglesOnMinuteChange(clock, date) {
+      let localHour = (date.getHours() + clock.timeOffset + 24) % 24;
+      let localMinute = date.getMinutes();
 
-    updateRandomAngles();
+      if(clock.lastMinute !== localMinute){
+        // 分が変わったらランダム角度更新
+        clock.randomAngles.hour = Math.random() * 2 * Math.PI;
+        clock.randomAngles.minute = Math.random() * 2 * Math.PI;
+        clock.lastMinute = localMinute;
+      }
+    }
 
     function drawClock(clock) {
       const ctx = clock.ctx;
       const radius = clock.radius;
       ctx.clearRect(-clock.canvas.width/2, -clock.canvas.height/2, clock.canvas.width, clock.canvas.height);
       drawFace(ctx, radius);
-      drawHand(ctx, clock.hourAngle, radius * 0.5, radius * 0.08);
-      drawHand(ctx, clock.minuteAngle, radius * 0.75, radius * 0.08);
+
+      const now = new Date();
+
+      updateRandomAnglesOnMinuteChange(clock, now);
+
+      // ランダム角度で描画（実際の時間の針ではなく）
+      drawHand(ctx, clock.randomAngles.hour, radius * 0.5, radius * 0.08);
+      drawHand(ctx, clock.randomAngles.minute, radius * 0.75, radius * 0.08);
     }
 
     function drawFace(ctx, radius) {
@@ -93,15 +105,12 @@
       ctx.rotate(-pos);
     }
 
-    function animate() {
+    function loop(){
       clocks.forEach(drawClock);
-      requestAnimationFrame(animate);
+      requestAnimationFrame(loop);
     }
 
-    // 1分ごとに角度更新
-    setInterval(updateRandomAngles, 60 * 1000);
-
-    animate();
+    loop();
   </script>
 </body>
 </html>
