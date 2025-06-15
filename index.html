@@ -3,30 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>簡単なPWAアプリ</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
+  <title>針なしアナログ時計（Canvas）</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background-color: #f0f0f0;
+      text-align: center;
+    }
+
+    #analogClock {
+      display: block;
+      margin: 2rem auto;
+      background: #fff;
+      border: 8px solid #333;
+      border-radius: 50%;
+    }
+  </style>
 </head>
 <body>
-
-  <!-- 時計を表示する場所 -->
-  <p id="clock"></p>
+  <h1>針なしアナログ時計</h1>
+  <canvas id="analogClock" width="200" height="200"></canvas>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log("Service Worker Registered"));
+    const canvas = document.getElementById("analogClock");
+    const ctx = canvas.getContext("2d");
+    const radius = canvas.height / 2;
+    ctx.translate(radius, radius);
+
+    function drawClock() {
+      drawFace(ctx, radius);
+      drawNumbers(ctx, radius);
+      drawTime(ctx, radius);
     }
 
-    function updateClock() {
-      const clockElem = document.getElementById('clock');
+    function drawFace(ctx, radius) {
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = "white";
+      ctx.fill();
+    }
+
+    function drawNumbers(ctx, radius) {
+      ctx.font = radius * 0.15 + "px sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      for (let num = 1; num <= 12; num++) {
+        let ang = num * Math.PI / 6;
+        ctx.rotate(ang);
+        ctx.translate(0, -radius * 0.85);
+        ctx.rotate(-ang);
+        ctx.fillText(num.toString(), 0, 0);
+        ctx.rotate(ang);
+        ctx.translate(0, radius * 0.85);
+        ctx.rotate(-ang);
+      }
+    }
+
+    function drawTime(ctx, radius) {
       const now = new Date();
-      const timeString = now.toLocaleTimeString();
-      clockElem.textContent = timeString;
+      let hour = now.getHours();
+      let minute = now.getMinutes();
+      let second = now.getSeconds();
+
+      // 時
+      hour = hour % 12;
+      hour = (hour * Math.PI / 6) +
+             (minute * Math.PI / (6 * 60)) +
+             (second * Math.PI / (360 * 60));
+      drawHand(ctx, hour, radius * 0.5, radius * 0.05);
+
+      // 分
+      minute = (minute * Math.PI / 30) + (second * Math.PI / (30 * 60));
+      drawHand(ctx, minute, radius * 0.75, radius * 0.03);
+
+      // 秒
+      second = (second * Math.PI / 30);
+      drawHand(ctx, second, radius * 0.85, radius * 0.01, "red");
     }
 
-    updateClock();
-    setInterval(updateClock, 1000);
+    function drawHand(ctx, pos, length, width, color = "#000") {
+      ctx.beginPath();
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = color;
+      ctx.moveTo(0, 0);
+      ctx.rotate(pos);
+      ctx.lineTo(0, -length);
+      ctx.stroke();
+      ctx.rotate(-pos);
+    }
+
+    setInterval(drawClock, 1000);
+    drawClock();
   </script>
 </body>
 </html>
