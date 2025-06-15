@@ -3,146 +3,436 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>なめらかに変わるランダム時計</title>
+  <title>24個の時計 - 1440パターン針角度</title>
   <style>
     body {
       font-family: sans-serif;
-      padding: 2rem;
+      padding: 1rem;
       background-color: #f0f0f0;
-      text-align: center;
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(8, 220px);
+      grid-template-rows: repeat(3, 220px);
+      gap: 1rem;
       justify-content: center;
-      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
     }
     canvas {
       background: #fff;
       border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 240px;
+      height: 240px;
+      margin: auto;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <canvas id="localClock" width="200" height="200"></canvas>
-  <canvas id="londonClock" width="200" height="200"></canvas>
 
-  <script>
-    const clocks = [
-      {
-        canvas: document.getElementById("localClock"),
-        ctx: null,
-        radius: 0,
-        currentAngles: {hour: 0, minute: 0},
-        targetAngles: {hour: 0, minute: 0},
-        lastMinute: null,
-        timeOffset: 0 // ローカル時間
-      },
-      {
-        canvas: document.getElementById("londonClock"),
-        ctx: null,
-        radius: 0,
-        currentAngles: {hour: 0, minute: 0},
-        targetAngles: {hour: 0, minute: 0},
-        lastMinute: null,
-        timeOffset: -new Date().getTimezoneOffset() / 60 - 1 // ロンドン時間 (例: 日本-9h)
-      }
-    ];
+<script>
+  for(let i=1; i<=24; i++) {
+    document.write(`<canvas id="clock${i}" width="200" height="200"></canvas>`);
+  }
+</script>
 
-    clocks.forEach(clock => {
-      clock.ctx = clock.canvas.getContext("2d");
-      clock.ctx.translate(clock.canvas.width / 2, clock.canvas.height / 2);
-      clock.radius = clock.canvas.height / 2 - 10;
+<script>
+  const allAngles = [];
+  for(let i=0; i<1440; i++) {
+    allAngles[i] = [];
+    for(let j=0; j<24; j++) {
+      allAngles[i][j] = { hour: 0, minute: 0 };
+    }
+  }
 
-      // 初期目標角度をセット
-      clock.targetAngles.hour = Math.random() * 2 * Math.PI;
-      clock.targetAngles.minute = Math.random() * 2 * Math.PI;
-      clock.currentAngles.hour = clock.targetAngles.hour;
-      clock.currentAngles.minute = clock.targetAngles.minute;
-      clock.lastMinute = null;
+  
+  for(let a = 0; a<=9*60 + 59; a++){
+    allAngles[a][0] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+    allAngles[a][1] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+    allAngles[a][8] = { hour: Math.PI, minute: 0};
+    allAngles[a][9] = { hour: Math.PI, minute: 0};
+    allAngles[a][16] = { hour: 9, minute: Math.PI*1 / 2};
+    allAngles[a][17] = { hour: 9, minute: Math.PI*3 / 2};
+  }
+  for(let a = 10*60; a<=19*60 + 59; a++){
+    allAngles[a][0] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+    allAngles[a][1] = { hour: Math.PI, minute: Math.PI};
+    allAngles[a][8] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+    allAngles[a][9] = { hour: Math.PI, minute: 0};
+    allAngles[a][16] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+    allAngles[a][17] = { hour: 0, minute: 0};
+  }
+  for(let a = 20*60; a<=23*60 + 59; a++){
+    allAngles[a][0] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+    allAngles[a][1] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+    allAngles[a][8] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+    allAngles[a][9] = { hour: Math.PI* 3 / 2, minute: 0};
+    allAngles[a][16] = { hour: 0, minute: Math.PI* 1 / 2};
+    allAngles[a][17] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+  }
+
+  for(let a = 0; a <=23*60 + 59; a++){
+    let remainder = a % 10;
+    switch (remainder){
+        case 0:
+            allAngles[a][6] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: Math.PI, minute: 0};
+            allAngles[a][15] = { hour: Math.PI, minute: 0};
+            allAngles[a][22] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][23] = { hour: Math.PI* 3 / 2, minute: 0};    
+            break;
+        case 1:
+            allAngles[a][6] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI};
+            allAngles[a][14] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+            allAngles[a][15] = { hour: Math.PI, minute: 0};
+            allAngles[a][22] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+            allAngles[a][23] = { hour: 0, minute: 0};    
+            break;
+        case 2:
+            allAngles[a][6] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+            allAngles[a][15] = { hour: Math.PI* 3 / 2, minute: 0};
+            allAngles[a][22] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][23] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+            break;
+        case 3:
+            allAngles[a][6] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+            allAngles[a][15] = { hour: Math.PI* 3 / 2, minute: 0};
+            allAngles[a][22] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+            allAngles[a][23] = { hour: Math.PI* 3 / 2, minute: 0};
+            break;
+        case 4:
+            allAngles[a][6] = { hour: Math.PI, minute: Math.PI};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI};
+            allAngles[a][14] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][15] = { hour: 0, minute: 0};
+            allAngles[a][22] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+            allAngles[a][23] = { hour: 0, minute: 0};
+            break;
+        case 5:
+            allAngles[a][6] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][15] = { hour: Math.PI* 3 / 2, minute: Math.PI};
+            allAngles[a][22] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+            allAngles[a][23] = { hour: 0, minute: Math.PI* 3 / 2};
+            break;
+        case 6:
+            allAngles[a][6] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: Math.PI, minute: 0};
+            allAngles[a][15] = { hour: Math.PI* 3 / 2, minute: Math.PI};
+            allAngles[a][22] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][23] = { hour: Math.PI* 3 / 2, minute: 0};
+            break;
+        case 7:
+            allAngles[a][6] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: 0, minute: 0};
+            allAngles[a][15] = { hour: Math.PI, minute: 0};
+            allAngles[a][22] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+            allAngles[a][23] = { hour: 0, minute: 0};
+            break;
+        case 8:
+            allAngles[a][6] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][15] = { hour: Math.PI* 3 / 2, minute: 0};
+            allAngles[a][22] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][23] = { hour: Math.PI* 3 / 2, minute: 0};
+            break;
+        case 9:
+            allAngles[a][6] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+            allAngles[a][7] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+            allAngles[a][14] = { hour: 0, minute: Math.PI* 1 / 2};
+            allAngles[a][15] = { hour: Math.PI, minute: 0};
+            allAngles[a][22] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+            allAngles[a][23] = { hour: 0, minute: Math.PI* 3 / 2};
+            break;
+    }
+  }
+
+    for(let a = 0; a <=23*60 + 59; a++){
+        let remainder = Math.floor((a % 60) / 10);
+        switch (remainder){
+            case 0:
+                allAngles[a][4] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: Math.PI, minute: 0};
+                allAngles[a][13] = { hour: Math.PI, minute: 0};
+                allAngles[a][20] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][21] = { hour: Math.PI* 3 / 2, minute: 0};    
+                break;
+            case 1:
+                allAngles[a][4] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI};
+                allAngles[a][12] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][13] = { hour: Math.PI, minute: 0};
+                allAngles[a][20] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][21] = { hour: 0, minute: 0};    
+                break;
+            case 2:
+                allAngles[a][4] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][13] = { hour: Math.PI* 3 / 2, minute: 0};
+                allAngles[a][20] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][21] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+                break;
+            case 3:
+                allAngles[a][4] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][13] = { hour: Math.PI* 3 / 2, minute: 0};
+                allAngles[a][20] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][21] = { hour: Math.PI* 3 / 2, minute: 0};
+                break;
+            case 4:
+                allAngles[a][4] = { hour: Math.PI, minute: Math.PI};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI};
+                allAngles[a][12] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][13] = { hour: 0, minute: 0};
+                allAngles[a][20] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][21] = { hour: 0, minute: 0};
+                break;
+            case 5:
+                allAngles[a][4] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][13] = { hour: Math.PI* 3 / 2, minute: Math.PI};
+                allAngles[a][20] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][21] = { hour: 0, minute: Math.PI* 3 / 2};
+                break;
+            case 6:
+                allAngles[a][4] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: Math.PI, minute: 0};
+                allAngles[a][13] = { hour: Math.PI* 3 / 2, minute: Math.PI};
+                allAngles[a][20] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][21] = { hour: Math.PI* 3 / 2, minute: 0};
+                break;
+            case 7:
+                allAngles[a][4] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: 0, minute: 0};
+                allAngles[a][13] = { hour: Math.PI, minute: 0};
+                allAngles[a][20] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][21] = { hour: 0, minute: 0};
+                break;
+            case 8:
+                allAngles[a][4] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][13] = { hour: Math.PI* 3 / 2, minute: 0};
+                allAngles[a][20] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][21] = { hour: Math.PI* 3 / 2, minute: 0};
+                break;
+            case 9:
+                allAngles[a][4] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][5] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][12] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][13] = { hour: Math.PI, minute: 0};
+                allAngles[a][20] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][21] = { hour: 0, minute: Math.PI* 3 / 2};
+                break;
+        }
+  }
+
+    for(let a = 0; a <=23*60 + 59; a++){
+        let remainder = Math.floor((a / 60) % 10);
+        switch (remainder){
+            case 0:
+                allAngles[a][2] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: Math.PI, minute: 0};
+                allAngles[a][11] = { hour: Math.PI, minute: 0};
+                allAngles[a][18] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][19] = { hour: Math.PI* 3 / 2, minute: 0};    
+                break;
+            case 1:
+                allAngles[a][2] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI};
+                allAngles[a][10] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][11] = { hour: Math.PI, minute: 0};
+                allAngles[a][18] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][19] = { hour: 0, minute: 0};    
+                break;
+            case 2:
+                allAngles[a][2] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][11] = { hour: Math.PI* 3 / 2, minute: 0};
+                allAngles[a][18] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][19] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+                break;
+            case 3:
+                allAngles[a][2] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][11] = { hour: Math.PI* 3 / 2, minute: 0};
+                allAngles[a][18] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][19] = { hour: Math.PI* 3 / 2, minute: 0};
+                break;
+            case 4:
+                allAngles[a][2] = { hour: Math.PI, minute: Math.PI};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI};
+                allAngles[a][10] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][11] = { hour: 0, minute: 0};
+                allAngles[a][18] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][19] = { hour: 0, minute: 0};
+                break;
+            case 5:
+                allAngles[a][2] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][11] = { hour: Math.PI* 3 / 2, minute: Math.PI};
+                allAngles[a][18] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][19] = { hour: 0, minute: Math.PI* 3 / 2};
+                break;
+            case 6:
+                allAngles[a][2] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI* 3 / 2, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: Math.PI, minute: 0};
+                allAngles[a][11] = { hour: Math.PI* 3 / 2, minute: Math.PI};
+                allAngles[a][18] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][19] = { hour: Math.PI* 3 / 2, minute: 0};
+                break;
+            case 7:
+                allAngles[a][2] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: 0, minute: 0};
+                allAngles[a][11] = { hour: Math.PI, minute: 0};
+                allAngles[a][18] = { hour: Math.PI*5 / 4, minute: Math.PI*5 / 4};
+                allAngles[a][19] = { hour: 0, minute: 0};
+                break;
+            case 8:
+                allAngles[a][2] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][11] = { hour: Math.PI* 3 / 2, minute: 0};
+                allAngles[a][18] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][19] = { hour: Math.PI* 3 / 2, minute: 0};
+                break;
+            case 9:
+                allAngles[a][2] = { hour: Math.PI, minute: Math.PI* 1 / 2};
+                allAngles[a][3] = { hour: Math.PI, minute: Math.PI* 3 / 2};
+                allAngles[a][10] = { hour: 0, minute: Math.PI* 1 / 2};
+                allAngles[a][11] = { hour: Math.PI, minute: 0};
+                allAngles[a][18] = { hour: Math.PI* 1 / 2, minute: Math.PI* 1 / 2};
+                allAngles[a][19] = { hour: 0, minute: Math.PI* 3 / 2};
+                break;
+        }
+  }
+
+
+
+
+  function timeToAngles(hour, minute) {
+    const hourAngle = ((hour % 12) + minute / 60) * (2 * Math.PI / 12);
+    const minuteAngle = (minute / 60) * 2 * Math.PI;
+    return { hour: hourAngle, minute: minuteAngle };
+  }
+
+  const clocks = [];
+
+  for(let i=1; i<=24; i++) {
+    const canvas = document.getElementById(`clock${i}`);
+    const ctx = canvas.getContext("2d");
+    ctx.translate(canvas.width/2, canvas.height/2);
+    clocks.push({
+      canvas,
+      ctx,
+      radius: canvas.height / 2 - 10,
+      currentAngles: { hour: 0, minute: 0 },
+      targetAngles: { hour: 0, minute: 0 },
+      lastMinute: null,
     });
+  }
 
-    function updateRandomAnglesOnMinuteChange(clock, date) {
-      let localMinute = (date.getMinutes() + Math.floor(clock.timeOffset * 60) / 60 + 60) % 60;
+  function getTimeIndex(date) {
+    return date.getHours() * 60 + date.getMinutes();
+  }
 
-      if (clock.lastMinute !== localMinute) {
-        clock.targetAngles.hour = Math.random() * 2 * Math.PI;
-        clock.targetAngles.minute = Math.random() * 2 * Math.PI;
-        clock.lastMinute = localMinute;
-      }
-    }
+  function normalizeAngle(angle) {
+    while (angle < 0) angle += 2 * Math.PI;
+    while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
+    return angle;
+  }
 
-    function drawClock(clock) {
-      const ctx = clock.ctx;
-      const radius = clock.radius;
-      ctx.clearRect(-clock.canvas.width/2, -clock.canvas.height/2, clock.canvas.width, clock.canvas.height);
-      drawFace(ctx, radius);
+  function lerpAngle(start, end, t) {
+    start = normalizeAngle(start);
+    end = normalizeAngle(end);
+    let diff = end - start;
+    if (diff > Math.PI) diff -= 2 * Math.PI;
+    if (diff < -Math.PI) diff += 2 * Math.PI;
+    return normalizeAngle(start + diff * t);
+  }
 
-      const now = new Date();
+  function drawFace(ctx, radius) {
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    ctx.restore();
+  }
 
-      updateRandomAnglesOnMinuteChange(clock, now);
+  // 🟩 影付き針の描画
+  function drawHand(ctx, pos, length, width, color = "#000") {
+    ctx.save();
+    ctx.rotate(pos);
 
-      // 線形補間でなめらかに変化させる
-      const lerp = (start, end, t) => start + (end - start) * t;
-      const smoothing = 0.05;
+    // 影の設定
+    ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
 
-      // 角度が2πをまたぐ場合の補正（最短距離で回転させる）
-      const normalizeAngle = angle => {
-        while (angle < 0) angle += 2 * Math.PI;
-        while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
-        return angle;
-      };
+    ctx.fillStyle = color;
+    ctx.fillRect(-width / 2, -length, width, length);
 
-      // 最短距離で補間
-      function lerpAngle(start, end, t) {
-        start = normalizeAngle(start);
-        end = normalizeAngle(end);
+    ctx.beginPath();
+    ctx.arc(0, 0, width / 2, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.restore();
+  }
 
-        let diff = end - start;
-        if (diff > Math.PI) diff -= 2 * Math.PI;
-        if (diff < -Math.PI) diff += 2 * Math.PI;
+  function drawClock(clock, index) {
+    const ctx = clock.ctx;
+    const radius = clock.radius;
+    ctx.clearRect(-clock.canvas.width / 2, -clock.canvas.height / 2, clock.canvas.width, clock.canvas.height);
+    drawFace(ctx, radius);
 
-        return normalizeAngle(start + diff * t);
-      }
+    const now = new Date();
+    const timeIndex = getTimeIndex(now);
 
-      clock.currentAngles.hour = lerpAngle(clock.currentAngles.hour, clock.targetAngles.hour, smoothing);
-      clock.currentAngles.minute = lerpAngle(clock.currentAngles.minute, clock.targetAngles.minute, smoothing);
+    const target = allAngles[timeIndex][index];
+    clock.targetAngles.hour = target.hour;
+    clock.targetAngles.minute = target.minute;
 
-      drawHand(ctx, clock.currentAngles.hour, radius * 0.5, radius * 0.08);
-      drawHand(ctx, clock.currentAngles.minute, radius * 0.75, radius * 0.08);
-    }
+    const smoothing = 0.03;
+    clock.currentAngles.hour = lerpAngle(clock.currentAngles.hour, clock.targetAngles.hour, smoothing);
+    clock.currentAngles.minute = lerpAngle(clock.currentAngles.minute, clock.targetAngles.minute, smoothing);
 
-    function drawFace(ctx, radius) {
-      ctx.save();
-      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-      ctx.shadowBlur = 15;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
+    drawHand(ctx, clock.currentAngles.hour, radius * 0.95, radius * 0.17);
+    drawHand(ctx, clock.currentAngles.minute, radius * 0.95, radius * 0.17);
+  }
 
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = "white";
-      ctx.fill();
+  function loop() {
+    clocks.forEach((clock, index) => drawClock(clock, index));
+    requestAnimationFrame(loop);
+  }
 
-      ctx.restore();
-    }
+  loop();
+</script>
 
-    function drawHand(ctx, pos, length, width, color = "#000") {
-      ctx.beginPath();
-      ctx.lineWidth = width;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = color;
-      ctx.moveTo(0, 0);
-      ctx.rotate(pos);
-      ctx.lineTo(0, -length);
-      ctx.stroke();
-      ctx.rotate(-pos);
-    }
-
-    function loop() {
-      clocks.forEach(drawClock);
-      requestAnimationFrame(loop);
-    }
-
-    loop();
-  </script>
 </body>
 </html>
