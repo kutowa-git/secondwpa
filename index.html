@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>分切り替わりでランダムに変わる時計</title>
+  <title>なめらかに変わるランダム時計</title>
   <style>
     body {
       font-family: sans-serif;
@@ -31,7 +31,8 @@
         canvas: document.getElementById("localClock"),
         ctx: null,
         radius: 0,
-        randomAngles: {hour: 0, minute: 0},
+        currentAngles: {hour: 0, minute: 0},
+        targetAngles: {hour: 0, minute: 0},
         lastMinute: null,
         timeOffset: 0 // ローカル時間
       },
@@ -39,7 +40,8 @@
         canvas: document.getElementById("londonClock"),
         ctx: null,
         radius: 0,
-        randomAngles: {hour: 0, minute: 0},
+        currentAngles: {hour: 0, minute: 0},
+        targetAngles: {hour: 0, minute: 0},
         lastMinute: null,
         timeOffset: -new Date().getTimezoneOffset() / 60 - 1 // ロンドン時間 (例: 日本-9h)
       }
@@ -49,16 +51,21 @@
       clock.ctx = clock.canvas.getContext("2d");
       clock.ctx.translate(clock.canvas.width / 2, clock.canvas.height / 2);
       clock.radius = clock.canvas.height / 2 - 10;
+
+      // 初期目標角度をセット
+      clock.targetAngles.hour = Math.random() * 2 * Math.PI;
+      clock.targetAngles.minute = Math.random() * 2 * Math.PI;
+      clock.currentAngles.hour = clock.targetAngles.hour;
+      clock.currentAngles.minute = clock.targetAngles.minute;
+      clock.lastMinute = null;
     });
 
     function updateRandomAnglesOnMinuteChange(clock, date) {
-      let localHour = (date.getHours() + clock.timeOffset + 24) % 24;
-      let localMinute = date.getMinutes();
+      let localMinute = (date.getMinutes() + Math.floor(clock.timeOffset * 60) / 60 + 60) % 60;
 
-      if(clock.lastMinute !== localMinute){
-        // 分が変わったらランダム角度更新
-        clock.randomAngles.hour = Math.random() * 2 * Math.PI;
-        clock.randomAngles.minute = Math.random() * 2 * Math.PI;
+      if (clock.lastMinute !== localMinute) {
+        clock.targetAngles.hour = Math.random() * 2 * Math.PI;
+        clock.targetAngles.minute = Math.random() * 2 * Math.PI;
         clock.lastMinute = localMinute;
       }
     }
@@ -73,9 +80,34 @@
 
       updateRandomAnglesOnMinuteChange(clock, now);
 
-      // ランダム角度で描画（実際の時間の針ではなく）
-      drawHand(ctx, clock.randomAngles.hour, radius * 0.5, radius * 0.08);
-      drawHand(ctx, clock.randomAngles.minute, radius * 0.75, radius * 0.08);
+      // 線形補間でなめらかに変化させる
+      const lerp = (start, end, t) => start + (end - start) * t;
+      const smoothing = 0.05;
+
+      // 角度が2πをまたぐ場合の補正（最短距離で回転させる）
+      const normalizeAngle = angle => {
+        while (angle < 0) angle += 2 * Math.PI;
+        while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
+        return angle;
+      };
+
+      // 最短距離で補間
+      function lerpAngle(start, end, t) {
+        start = normalizeAngle(start);
+        end = normalizeAngle(end);
+
+        let diff = end - start;
+        if (diff > Math.PI) diff -= 2 * Math.PI;
+        if (diff < -Math.PI) diff += 2 * Math.PI;
+
+        return normalizeAngle(start + diff * t);
+      }
+
+      clock.currentAngles.hour = lerpAngle(clock.currentAngles.hour, clock.targetAngles.hour, smoothing);
+      clock.currentAngles.minute = lerpAngle(clock.currentAngles.minute, clock.targetAngles.minute, smoothing);
+
+      drawHand(ctx, clock.currentAngles.hour, radius * 0.5, radius * 0.08);
+      drawHand(ctx, clock.currentAngles.minute, radius * 0.75, radius * 0.08);
     }
 
     function drawFace(ctx, radius) {
@@ -105,7 +137,7 @@
       ctx.rotate(-pos);
     }
 
-    function loop(){
+    function loop() {
       clocks.forEach(drawClock);
       requestAnimationFrame(loop);
     }
